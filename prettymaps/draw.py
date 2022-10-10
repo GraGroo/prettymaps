@@ -40,30 +40,27 @@ def plot_shape(shape, ax, vsketch=None, **kwargs):
     if isinstance(shape, Iterable) and type(shape) != MultiLineString:
         for shape_ in shape:
             plot_shape(shape_, ax, vsketch=vsketch, **kwargs)
-    else:
-        if not shape.is_empty:
+    elif not shape.is_empty:
+        if vsketch is None:
+            ax.add_patch(PolygonPatch(shape, **kwargs))
+        elif ("draw" not in kwargs) or kwargs["draw"]:
 
-            if vsketch is None:
-                ax.add_patch(PolygonPatch(shape, **kwargs))
+            if "stroke" in kwargs:
+                vsketch.stroke(kwargs["stroke"])
             else:
-                if ("draw" not in kwargs) or kwargs["draw"]:
+                vsketch.stroke(1)
 
-                    if "stroke" in kwargs:
-                        vsketch.stroke(kwargs["stroke"])
-                    else:
-                        vsketch.stroke(1)
+            if "penWidth" in kwargs:
+                vsketch.penWidth(kwargs["penWidth"])
+            else:
+                vsketch.penWidth(0.3)
 
-                    if "penWidth" in kwargs:
-                        vsketch.penWidth(kwargs["penWidth"])
-                    else:
-                        vsketch.penWidth(0.3)
+            if "fill" in kwargs:
+                vsketch.fill(kwargs["fill"])
+            else:
+                vsketch.noFill()
 
-                    if "fill" in kwargs:
-                        vsketch.fill(kwargs["fill"])
-                    else:
-                        vsketch.noFill()
-
-                    vsketch.geometry(shape)
+            vsketch.geometry(shape)
 
 
 # Plot a collection of shapes
@@ -202,7 +199,7 @@ def plot(
 
     # Save maximum dilation for later use
     dilations = [kwargs["dilate"] for kwargs in layers.values() if "dilate" in kwargs]
-    max_dilation = max(dilations) if len(dilations) > 0 else 0
+    max_dilation = max(dilations, default=0)
 
     ####################
     ### Fetch Layers ###

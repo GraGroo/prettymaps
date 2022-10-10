@@ -54,16 +54,15 @@ def get_boundary(
             .geometry[0]
             .buffer(radius)
         )
-    else:
-        x, y = np.stack(
-            ox.project_gdf(GeoDataFrame(geometry=[Point(point[::-1])], crs=crs))
-            .geometry[0]
-            .xy
-        )
-        r = radius
-        return Polygon(
-            [(x - r, y - r), (x + r, y - r), (x + r, y + r), (x - r, y + r)]
-        ).buffer(dilate)
+    x, y = np.stack(
+        ox.project_gdf(GeoDataFrame(geometry=[Point(point[::-1])], crs=crs))
+        .geometry[0]
+        .xy
+    )
+    r = radius
+    return Polygon(
+        [(x - r, y - r), (x + r, y - r), (x + r, y + r), (x - r, y + r)]
+    ).buffer(dilate)
 
 
 def get_perimeter(query, by_osmid: Boolean = False, **kwargs) -> GeoDataFrame:
@@ -81,7 +80,7 @@ def get_perimeter(query, by_osmid: Boolean = False, **kwargs) -> GeoDataFrame:
         query,
         by_osmid=by_osmid,
         **kwargs,
-        **{x: kwargs[x] for x in ["circle", "dilate"] if x in kwargs.keys()}
+        **{x: kwargs[x] for x in ["circle", "dilate"] if x in kwargs}
     )
 
 
@@ -363,16 +362,15 @@ def get_layer(layer: String, **kwargs) -> Union[Polygon, MultiPolygon]:
         # If perimeter is already provided:
         if "perimeter" in kwargs:
             return unary_union(ox.project_gdf(kwargs["perimeter"]).geometry)
-        # If point and radius are provided:
         elif "point" in kwargs and "radius" in kwargs:
             crs = "EPSG:4326"
-            perimeter = get_boundary(
+            return get_boundary(
                 kwargs["point"],
                 kwargs["radius"],
                 crs,
-                **{x: kwargs[x] for x in ["circle", "dilate"] if x in kwargs.keys()}
+                **{x: kwargs[x] for x in ["circle", "dilate"] if x in kwargs}
             )
-            return perimeter
+
         else:
             raise Exception("Either 'perimeter' or 'point' & 'radius' must be provided")
     # Fetch streets or railway
